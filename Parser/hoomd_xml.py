@@ -26,8 +26,8 @@ class hoomd_xml(object):
         self.nodes = {}
         for e in configuration:
             if e.tag == 'box':
-                self.box = self._get_attrib(e.attrib)
-                self.cbox = np.array([self.box['lx'], self.box['ly'], self.box['lz']]).reshape((3,))
+                self.cbox = self._get_attrib(e.attrib)
+                self.box = np.array([self.cbox['lx'], self.cox['ly'], self.cbox['lz']]).reshape((3,))
                 continue
             if (len(needed) != 0) and (not e.tag in needed):
                 continue
@@ -37,14 +37,3 @@ class hoomd_xml(object):
                 self.nodes[e.tag] = loadtxt(StringIO(e.text), dtype=dt)
             except KeyError:
                 self.nodes[e.tag] = loadtxt(StringIO(e.text))
-
-
-if __name__ == "__main__":
-    from sys import argv
-
-    file = argv[1]
-    xml = hoomd_xml(argv[1])
-    print(xml.nodes['bond']['name'])
-    print("----------")
-    print(xml.box, xml.configure)
-    print(xml.nodes)
