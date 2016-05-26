@@ -1,9 +1,9 @@
-import numpy as np
+import numpy
 
 def cm(pos, mass=None):
     na = len(pos)
     if type(mass)==type(None):
-        mass = np.ones(na)
+        mass = numpy.ones(na)
         sum_mass = na
     else:
         sum_mass = sum(mass)

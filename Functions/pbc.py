@@ -1,4 +1,4 @@
-import numpy as np
+import numpy
 
 
 def pbc2d(r, box):
@@ -7,8 +7,8 @@ def pbc2d(r, box):
     :param box: ndarray of box in cubic form: array([lx, ly, lz])
     :return: ndarray of positions
     '''
-    return np.array([ x - box * np.round(x / box) for x in r ])
-    #return r - box * np.round(r / box)
+    return numpy.array([ x - box * numpy.round(x / box) for x in r ])
+    #return r - box * numpy.round(r / box)
 
 def pbc1d(r, box):
-    return r - box*np.round(r/box)
+    return r - box*numpy.round(r/box)

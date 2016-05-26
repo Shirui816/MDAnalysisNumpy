@@ -1,7 +1,7 @@
 from numpy import array, loadtxt
-import numpy as np
+import numpy
 from io import StringIO
-import xml.etree.cElementTree as ET  # pypy will be a bit slower than python
+from xml.etree import cElementTree  # pypy will be a bit slower than python
 import warnings
 from DataStructure.DtypeDict import dtypeDict
 
@@ -19,7 +19,7 @@ class hoomd_xml(object):
         return array(values, dtype=dt)
 
     def __init__(self, filename, needed=[]):
-        tree = ET.ElementTree(file=filename)
+        tree = cElementTree.ElementTree(file=filename)
         root = tree.getroot()
         configuration = root[0]
         self.configure = self._get_attrib(configuration.attrib)
@@ -27,7 +27,7 @@ class hoomd_xml(object):
         for e in configuration:
             if e.tag == 'box':
                 self.cbox = self._get_attrib(e.attrib)
-                self.box = np.array([self.cbox['lx'], self.cox['ly'], self.cbox['lz']]).reshape((3,))
+                self.box = numpy.array([self.cbox['lx'], self.cbox['ly'], self.cbox['lz']]).reshape((3,))
                 continue
             if (len(needed) != 0) and (not e.tag in needed):
                 continue

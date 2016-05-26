@@ -1,10 +1,10 @@
-import numpy as np
-from Functions.pbc import pbc, pbc1d
+import numpy
+from Functions.pbc import pbc2d, pbc1d
 
 def cm(pos, box, mass=None):
     na = len(pos)
     if type(mass) == type(None):
-        mass = np.ones(na)
+        mass = numpy.ones(na)
         sum_mass = na
     else:
         sum_mass = sum(mass)
