@@ -6,7 +6,7 @@ from MoleculeClassify.hoomd_mols import hoomd_mols
 from math import acos, pi, sqrt
 
 
-from cfunctions.cfunctions.functions import pbc, RgRadial
+from cfunctions.cfunctions.functions import pbc, RgRadial, RgRadial_eff_idx
 
 def RgTensor(pos, box):
         n, m = pos.shape
@@ -98,7 +98,7 @@ def main(seg, xml, binsize = 0.1):
                         r_cm = sqrt(cm_seg.dot(cm_seg))
                         ss = shell_dist(seg_pos, binsize, bins)
                         #cid[sid] += 1
-                        rg2, rgn2 = RgRadial(seg_pos, box)
+                        rg2, rgn2 = RgRadial_eff_idx(seg_pos, box)
                         rgtensor = RgTensor(seg_pos, box)
                         maxis = MajorAxis_np(rgtensor)
                         r_maixs = sqrt(maxis.dot(maxis))

@@ -27,7 +27,7 @@ class hoomd_xml(object):
         for e in configuration:
             if e.tag == 'box':
                 self.cbox = self._get_attrib(e.attrib)
-                self.box = numpy.array([self.cbox['lx'], self.cbox['ly'], self.cbox['lz']]).reshape((3,))
+                self.box = numpy.array([self.cbox['lx'], self.cbox['ly'], self.cbox['lz']]).reshape((3,)).astype(numpy.float64)
                 continue
             if (len(needed) != 0) and (not e.tag in needed):
                 continue
