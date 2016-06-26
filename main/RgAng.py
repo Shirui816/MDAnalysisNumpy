@@ -55,7 +55,7 @@ def RgRadial_py(r_pos, box):
                         rgn2 += s.dot(d) ** 2 / dr
         return(rg2, rgn2)
 
-def shell_id(r_pos, binsize, bins):
+def shell_dist(r_pos, binsize, bins):
 		res = numpy.zeros((bins,))
         sid = 0
         m, n = r_pos.shape
@@ -63,6 +63,14 @@ def shell_id(r_pos, binsize, bins):
                 r = sqrt(p.dot(p))
                 res[sid] += 1
         return(res/sum(res))
+
+def shell_id(r_pos, binsize):
+        sid = 0
+        m, n = r_pos.shape
+        for p in r_pos:
+                r = sqrt(p.dot(p))
+                sid += int(r/binsize)
+        return(sid/m)
 
 def main(seg, xml, binsize = 0.1):
         pos = xml.nodes['position']
@@ -88,7 +96,7 @@ def main(seg, xml, binsize = 0.1):
                         seg_pos = r_pos[seg_idx]
                         cm_seg = cm(seg_pos, box)
                         r_cm = sqrt(cm_seg.dot(cm_seg))
-                        ss = shell_id(seg_pos, binsize, bins)
+                        ss = shell_dist(seg_pos, binsize, bins)
                         #cid[sid] += 1
                         rg2, rgn2 = RgRadial(seg_pos, box)
                         rgtensor = RgTensor(seg_pos, box)
