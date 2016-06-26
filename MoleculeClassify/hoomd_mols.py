@@ -8,7 +8,7 @@ from MoleculeClassify.molcules import grabmolecules_without_body, grabmolecules_
 
 class hoomd_mols(object):
     def __init__(self, hoomd_xml):
-        self.cbox = hoomd_xml.cbox
+        self.box = hoomd_xml.box
         self.na = hoomd_xml.configure['natoms'].reshape((1,))
         self.bond_hash_nn, self.bond_hash_wn = bond_hash_unidirect(hoomd_xml.nodes['bond'], self.na)
         self.body_hash = body_hash_unidirect(hoomd_xml.nodes['body'])
@@ -23,9 +23,9 @@ class hoomd_mols(object):
             if molecular_hash[i] == True:
                 continue
             molecular_idxs = []
-            #grabmolecules_with_body(i, self.body_hash, self.bond_hash_nn, mol_idxes=molecular_idxs,
-                                    #mol_used=molecular_hash)
-            grabmolecules_without_body(i, self.bond_hash_nn, mol_idxes=molecular_idxs,mol_used = molecular_hash)
+            grabmolecules_with_body(i, self.body_hash, self.bond_hash_nn, mol_idxes=molecular_idxs,
+                                    mol_used=molecular_hash)
+            #grabmolecules_without_body(i, self.bond_hash_nn, mol_idxes=molecular_idxs,mol_used = molecular_hash)
             molecular_list.append(molecular_idxs)
             for atom in molecular_idxs:
                 molecular_hash[atom] = True
