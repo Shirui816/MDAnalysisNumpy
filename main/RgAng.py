@@ -55,14 +55,14 @@ def RgRadial_py(r_pos, box):
                         rgn2 += s.dot(d) ** 2 / dr
         return(rg2, rgn2)
 
-def shell_id(r_pos, binsize):
+def shell_id(r_pos, binsize, bins):
+		res = numpy.zeros((bins,))
         sid = 0
         m, n = r_pos.shape
         for p in r_pos:
                 r = sqrt(p.dot(p))
-                sid += int(r/binsize)
-        sid /= m
-        return(sid)
+                res[sid] += 1
+        return(res/sum(res))
 
 def main(seg, xml, binsize = 0.1):
         pos = xml.nodes['position']
@@ -88,22 +88,16 @@ def main(seg, xml, binsize = 0.1):
                         seg_pos = r_pos[seg_idx]
                         cm_seg = cm(seg_pos, box)
                         r_cm = sqrt(cm_seg.dot(cm_seg))
-                        sid = shell_id(seg_pos, binsize)
-                        cid[sid] += 1
+                        ss = shell_id(seg_pos, binsize, bins)
+                        #cid[sid] += 1
                         rg2, rgn2 = RgRadial(seg_pos, box)
                         rgtensor = RgTensor(seg_pos, box)
                         maxis = MajorAxis_np(rgtensor)
                         r_maixs = sqrt(maxis.dot(maxis))
                         angle = maxis.dot(cm_seg)/r_cm/r_maixs
-                        angs[sid] += acos(angle)
-                        rg2s[sid] += rg2
-                        rgn2s[sid] += rgn2
-        for i in range(bins):
-                if cid[i] ==0:
-                        cid[i] = 1
-        rg2s/=cid
-        rgn2s/=cid
-        angs/=cid
+                        angs += acos(angle) * ss
+                        rg2s += rg2 * ss
+                        rgn2s += rgn2 * ss
         angs = angs/pi * 180
         rgfile = open('rg.txt', 'w')
         rgfile.write('#r, rg2, rgn2\n')
