@@ -27,9 +27,10 @@ cimport numpy as np
 #@cython.boundscheck(False) # turn off bounds-checking for entire function
 #@cython.wraparound(False)  # turn off negative index wrapping for entire function
 def RgRadial(np.ndarray r_pos, np.ndarray box):
-        cdef int m = r_pos.shape[0]
+        cdef long m = r_pos.shape[0]
         cdef double rg2 = 0
         cdef double rgn2 = 0
+        cdef long i,j
         for i in range(m-1):
                 for j in range(i+1, m):
                         #d = pbc1d((r_pos[i]+r_pos[j])/2, box)
