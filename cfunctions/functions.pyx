@@ -22,15 +22,57 @@ def icell(long ix, long iy, long iz, long ibx, long iby, long ibz):
 def wcell(double x, double y, double z, ib, box):
     return int((x/box.x + 0.5) * ib.x) + int((y/box.y + 0.5) * ib.y) * ib.x + int((z/box.z + 0.5) * ib.z) * ib.y * ib.x
 
+import numpy as np
 cimport cython
 cimport numpy as np
+
+@cython.boundscheck(False) # turn off bounds-checking for entire function
+@cython.wraparound(False)  # turn off negative index wrapping for entire function
+def pbc2d(np.ndarray[double, ndim=2] pos, np.ndarray[double, ndim=1] box):
+    cdef long na, d, i
+    na = pos.shape[0]
+    d = pos.shape[1]
+    cdef np.ndarray res = np.zeros([na, d], dtype=np.float)
+    for i in range(na):
+        res[i, 0] = pbc(pos[i, 0], box[0])
+        res[i, 1] = pbc(pos[i, 1], box[1])
+        res[i, 2] = pbc(pos[i, 2], box[2])
+    return res
+
+@cython.boundscheck(False) # turn off bounds-checking for entire function
+@cython.wraparound(False)  # turn off negative index wrapping for entire function
+def cm_cc(np.ndarray[double, ndim=2] pos, np.ndarray[double, ndim=1] box):
+    cdef long na, d, i
+    cdef double xcm=0
+    cdef double ycm =0
+    cdef double zcm=0
+    cdef np.ndarray res = np.zeros(3, dtype=np.float)
+    na = pos.shape[0]
+    d = pos.shape[1]
+    cdef np.ndarray dp = np.zeros([na, d], dtype=np.float)
+    for i in range(na-1):
+        dp[i+1, 0] = pbc(pos[i+1,0] - pos[i, 0], box[0]) + dp[i,0]
+        dp[i+1, 1] = pbc(pos[i+1,1] - pos[i, 1], box[1]) + dp[i,1]
+        dp[i+1, 2] = pbc(pos[i+1,2] - pos[i, 2], box[2]) + dp[i,2]
+    for i in range(na):
+        xcm += dp[i,0]
+        ycm += dp[i,1]
+        zcm += dp[i,2]
+    res[0] = pbc(xcm/na + pos[0,0], box[0])
+    res[1] = pbc(ycm/na + pos[0,1], box[1])
+    res[2] = pbc(zcm/na + pos[0,2], box[2])
+    return res
+
+
+
+
 #@cython.boundscheck(False) # turn off bounds-checking for entire function
 #@cython.wraparound(False)  # turn off negative index wrapping for entire function
 def RgRadial(np.ndarray r_pos, np.ndarray box):
         cdef long m = r_pos.shape[0]
         cdef double rg2 = 0
         cdef double rgn2 = 0
-        cdef long i,j
+        cdef long i, j
         for i in range(m-1):
                 for j in range(i+1, m):
                         #d = pbc1d((r_pos[i]+r_pos[j])/2, box)
@@ -45,6 +87,8 @@ def RgRadial(np.ndarray r_pos, np.ndarray box):
                         rg2 += sx*sx+sy*sy+sz*sz
                         rgn2 += (sx*dx+sy*dy+sz*dz)**2 / dr
         return(rg2/m**2, rgn2/m**2)
+
+
 
 @cython.boundscheck(False) # turn off bounds-checking for entire function
 @cython.wraparound(False)  # turn off negative index wrapping for entire function

@@ -11,14 +11,14 @@ def bond_hash_unidirect(bond, natoms):
     print('Building bond hash...')
     if not isinstance(bond, np.ndarray):
         return {}
-    bonds = list(set(list(bond['name'])))
+    bonds = list(set(list(bond[:,0])))
     for i in range(natoms):
         bond_hash_wn[i] = dict(((x, []) for x in bonds))
         bond_hash_nn[i] = []
     for b in bond:
-        nm = b['name']
-        idx = b['id1']
-        jdx = b['id2']
+        nm = b[0]
+        idx = b[1]
+        jdx = b[2]
         bond_hash_wn[idx][nm].append(jdx)
         bond_hash_nn[idx].append(jdx)
     print('Done.')
@@ -35,14 +35,14 @@ def bond_hash_dualdirect(bond, natoms):
     print('Building bond hash...')
     if not isinstance(bond, np.ndarray):
         return {}
-    bonds = list(set(list(bond['name'])))
+    bonds = list(set(list(bond[:,0])))
     for i in range(natoms):
         bond_hash_wn[i] = dict(((x, []) for x in bonds))
         bond_hash_nn[i] = []
     for b in bond:
-        nm = b['name']
-        idx = b['id1']
-        jdx = b['id2']
+        nm = b[0]
+        idx = b[1]
+        jdx = b[2]
         bond_hash_wn[idx][nm].append(jdx)
         bond_hash_nn[idx].append(jdx)
         bond_hash_nn[jdx].append(idx)
