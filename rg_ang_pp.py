@@ -44,8 +44,8 @@ def run(T):
 	#rt = numpy.zeros(shape)
 	for i in range(s,e):
 		fn = flist[i]
-		xml = Parser.hoomd_xml.hoomd_xml(fn)
-		rg2s1, rgn2s1, angs1, r1 = RgAng.main(SEGMENT, xml, mols, binsize=BINSIZE)
+		xml = Parser.hoomd_xml_pd.hoomd_xml(fn)
+		rg2s1, rgn2s1, angs1, r1 = Functions.RgAng.main(SEGMENT, xml, mols, binsize=BINSIZE)
 		rg2st += rg2s1
 		rgn2st += rgn2s1
 		angst += angs1
@@ -53,7 +53,7 @@ def run(T):
 	return(rg2st, rgn2st, angst)
 
 inputs = list((i*mm, i * mm + mm if i<THS-1 else i*mm+rem+mm, allfiles, mols, shape, BINSIZE, SEGMENT) for i in range(THS))
-jobs = [(input_, job_server.submit(run,(input_,), modules=("numpy","Parser.hoomd_xml","RgAng"))) for input_ in inputs]
+jobs = [(input_, job_server.submit(run,(input_,), modules=("numpy","Parser.hoomd_xml_pd","Functions.RgAng"))) for input_ in inputs]
 
 
 
