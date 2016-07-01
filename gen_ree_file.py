@@ -1,7 +1,7 @@
 import numpy as np
 
 from MoleculeClassify.hoomd_mols import hoomd_mols
-from Parser.hoomd_xml import hoomd_xml
+from Parser.hoomd_xml_pd import hoomd_xml
 
 from sys import argv
 
@@ -15,7 +15,7 @@ SEG, BINSIZE = 50, 2
 
 
 fs = argv[1:]
-from SegAcf import main
+from Functions.SegAcf import main
 xml1 = hoomd_xml(fs[0])
 mols = hoomd_mols(xml1)
 

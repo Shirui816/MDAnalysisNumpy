@@ -6,7 +6,7 @@ from MoleculeClassify.hoomd_mols import hoomd_mols
 from math import acos, pi, sqrt
 import os
 
-from cfunctions.cfunctions.functions import pbc, RgRadial, RgRadial_eff_idx
+from cfunctions.cfunctions.functions import pbc, RgRadial, RgRadial_eff_idx, pbc2d, cm_cc
 
 def RgTensor(pos, box):
 	n, m = pos.shape
@@ -75,7 +75,7 @@ def shell_id_w(r_pos, binsize):
 	return(int(sid2/sid))
 
 def shell_cm(r_pos, binsize, box):
-	cmr =  cm(r_pos, box)
+	cmr =  cm_cc(r_pos, box)
 	r = sqrt(cmr.dot(cmr))
 	sid = int(r/binsize)
 	return(sid)
@@ -97,8 +97,8 @@ def main(seg, xml, mols, binsize = 0.1, fn=''):
 	angs = numpy.zeros((bins,),dtype=numpy.float)
 	cid = numpy.zeros((bins,),dtype=numpy.float)
 	types = xml.nodes['type']
-	posA = pos[types==b'A']
-	cmA = cm(posA, xml.box)
+	posA = pos[types=='A']
+	cmA = cm_cc(posA, xml.box)
 	r_pos = pbc2d(pos-cmA, box)
 	#mols = hoomd_mols(xml)
 	countSeg = 0
@@ -111,7 +111,7 @@ def main(seg, xml, mols, binsize = 0.1, fn=''):
 			countSeg += 1
 			seg_idx = mol[s:s+seg]
 			seg_pos = r_pos[seg_idx]
-			cm_seg = cm(seg_pos, box)
+			cm_seg = cm_cc(seg_pos, box)
 			r_cm = sqrt(cm_seg.dot(cm_seg))
 			#sid = shell_id(seg_pos, binsize)
 			sid = shell_cm(seg_pos, binsize, box)

@@ -1,12 +1,12 @@
 import numpy as np
 
 from MoleculeClassify.hoomd_mols import hoomd_mols
-from Parser.hoomd_xml import hoomd_xml
+from Parser.hoomd_xml_pd import hoomd_xml
 
 from sys import argv
 
 fs = argv[1:]
-from RgAng import main
+from Functions.RgAng import main
 xml1 = hoomd_xml(fs[0])
 mols = hoomd_mols(xml1)
 

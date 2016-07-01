@@ -1,7 +1,8 @@
 import numpy
 from Functions.cm_with_pbc import cm
 from Functions.pbc import pbc2d, pbc1d
-
+from cfunctions.functions import pbc2d, pbc, cm_cc
+from math import sqrt
 
 def shells(center, pos, box, s = 300):
         '''
@@ -27,7 +28,7 @@ def shells_c0(pos_c0, box, s = 300):
         L = box.min()/2
         delta = L/s
         for i in range(n):
-                d = sum(pos_c0[i]**2)**0.5
+                d = sqrt(pos_c0[i].dot(pos_c0[i]))
                 if not d > L:
                         result[i][int(d/delta)] += 1
         return(result)

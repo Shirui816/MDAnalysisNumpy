@@ -1,10 +1,10 @@
 #!/bin/python
 from Functions.cm_with_pbc import cm, cm_c
-from Functions.pbc import pbc2d, pbc1d
+from Functions.pbc import pbc1d
 import numpy
 from MoleculeClassify.hoomd_mols import hoomd_mols
 from math import acos, pi, sqrt
-from cfunctions.cfunctions.functions import cm_cc
+from cfunctions.cfunctions.functions import cm_cc, pbc2d
 
 from cfunctions.cfunctions.functions import pbc, RgRadial, RgRadial_eff_idx
 
@@ -40,8 +40,8 @@ def main(seg, xml, mols, binsize = 0.1, fn=''):
 	angs = numpy.zeros((bins,),dtype=numpy.float)
 	cid = numpy.zeros((bins,),dtype=numpy.float)
 	types = xml.nodes['type']
-	posA = pos[types==b'A']
-	cmA = cm(posA, xml.box)
+	posA = pos[types=='A']
+	cmA = cm_cc(posA, xml.box)
 	r_pos = pbc2d(pos-cmA, box)
 	#mols = hoomd_mols(xml)
 	countSeg = 0
