@@ -83,3 +83,45 @@ def main(seg, xml, mols, binsize = 0.1, fn=''):
 	#	angfile.write("%.4f %.4f\n" % (binsize * (i+0.5), ang))
 	#rgfile.close()
 	#angfile.close()
+
+
+
+
+
+def main4pp(seg, xml, mols, binsize = 0.1, fn=''):
+        pos = xml.nodes['position']
+        box = xml.box
+        bins = int(0.5 * sqrt(box.dot(box))/binsize) + 1
+        rg2s = numpy.zeros((bins,), dtype=numpy.float)
+        rgn2s = numpy.zeros((bins,),dtype=numpy.float)
+        angs = numpy.zeros((bins,),dtype=numpy.float)
+        cid = numpy.zeros((bins,),dtype=numpy.float)
+        types = xml.nodes['type']
+        posA = pos[types=='A']
+        cmA = cm_cc(posA, xml.box)
+        r_pos = pbc2d(pos-cmA, box)
+        #mols = hoomd_mols(xml)
+        countSeg = 0
+        res = []
+        shells = numpy.zeros((bins,))
+        for mol in mols.mol_idxes[1:]:
+                length = len(mol)
+                for s in range(0, length, seg):
+                        if s + seg > length:
+                                continue
+                        countSeg += 1
+                        seg_idx = mol[s:s+seg]
+                        seg_pos = r_pos[seg_idx]
+                        sid = shell_cm(seg_pos, binsize, box)
+                        reevx = pbc(seg_pos[-1][0] - seg_pos[0][0], box[0])
+                        reevy = pbc(seg_pos[-1][1] - seg_pos[0][1], box[1])
+                        reevz = pbc(seg_pos[-1][2] - seg_pos[0][2], box[2])
+                        #ss, sdist = shell_dist(seg_pos, binsize, bins)
+                        #shells += s
+                        #sid = shell_id(seg_pos, binsize)
+                        res.append("%.4f %.4f %.4f %.4f\n" % (reevx, reevy, reevz, sid))
+                        cid[sid] += 1
+        #for i in range(bins):
+                #if cid[i] ==0:
+                        #cid[i] = 1
+        return(cid, countSeg, res)
