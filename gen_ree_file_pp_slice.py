@@ -22,15 +22,21 @@ if len(fs) % SLICES:
 from Functions.SegAcf import main4pp
 xml1 = hoomd_xml(fs[0])
 mols = hoomd_mols(xml1)
+ss = int(len(fs)/SLICES)
+
+for i in range(0, SLICES):
+	idx = i + 1
+	xmlx = hoomd_xml(fs[i*ss])
+	cid, cs, resx = main4pp(SEG, xmlx, mols, binsize=BINSIZE)
+	o = open('cid%s.txt' % (idx), 'w')
+	for i in range(cid.shape[0]):
+		o.write("%.4f %.4f\n" % (i, cid[i]))
+	o.close()
 
 cid,cs,res = main4pp(SEG, xml1, mols, binsize=BINSIZE)
 alres = {}
 alres[0] = res
 
-o = open('cid.txt', 'w')
-
-for i in range(cid.shape[0]):
-	o.write("%.4f %.4f\n" % (i, cid[i]))
 
 p = open('seg_num.txt','w')
 p.write('%.4f\n' % (cs))
