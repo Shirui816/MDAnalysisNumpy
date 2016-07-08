@@ -9,8 +9,8 @@ import os
 from sys import exit
 
 
-SEG, BINSIZE = 100, 2
-SLICES = 2
+SEG, BINSIZE = 100, 1
+SLICES = 4
 
 fs = argv[1:]
 
@@ -24,17 +24,22 @@ xml1 = hoomd_xml(fs[0])
 mols = hoomd_mols(xml1)
 ss = int(len(fs)/SLICES)
 
-CIDS = []
+#CIDS = []
 
-for i in range(0, SLICES):
-	idx = i + 1
-	xmlx = hoomd_xml(fs[i*ss])
-	cid, cs, resx = main4pp_data(SEG, xmlx, mols, binsize=BINSIZE)
-	CIDS.append(cid)
+#for i in range(0, SLICES):
+#	idx = i + 1
+	#xmlx = hoomd_xml(fs[i*ss]) # start
+#	xmlx = hoomd_xml(fs[i*ss+int(ss/2)], needed=['position', 'type']) # middle
+#	cid, cs, resx = main4pp_data(SEG, xmlx, mols, binsize=BINSIZE)
+#	CIDS.append(cid)
 
 cid,cs,res = main4pp_data(SEG, xml1, mols, binsize=BINSIZE)
+CIDSHAPE = cid.shape
 alres = {}
+alcid = {}
 alres[0] = res
+alcid[0] = cid
+
 
 SEGNUM = cs
 
@@ -43,7 +48,7 @@ import pp
 
 
 
-THS = 20
+THS = 40
 
 allfiles = fs[1:]
 mm = int(len(allfiles)/THS)
@@ -55,12 +60,14 @@ job_server = pp.Server(THS)
 def run(T):
 	resd = {}
 	s, e, flist, mols, BINSIZE,SEGMENT = T
+	cidd = {}
 	for i in range(s,e):
 		fn = flist[i]
 		xml = Parser.hoomd_xml_pd.hoomd_xml(fn, needed=['position', 'type'])
 		cid1, cs, res = Functions.SegAcf.main4pp_data(SEGMENT, xml, mols, binsize=BINSIZE)
 		resd[i+1] = res
-	return(resd)
+		cidd[i+1] = cid1
+	return(resd, cidd)
 
 inputs = list((i*mm, i * mm + mm if i<THS-1 else i*mm+rem+mm, allfiles, mols, BINSIZE, SEG) for i in range(THS))
 jobs = [(input_, job_server.submit(run,(input_,), modules=("numpy","Parser.hoomd_xml_pd","Functions.SegAcf"))) for input_ in inputs]
@@ -69,12 +76,10 @@ jobs = [(input_, job_server.submit(run,(input_,), modules=("numpy","Parser.hoomd
 
 for input_, job in jobs:
 	print("LIST",input_[0], input_[1])
-	resd = job()
-	if resd:
-		alres.update(resd)
-
+	resd,cidd = job()
+	alres.update(resd)
+	alcid.update(cidd)
 job_server.print_stats()
-
 
 
 
@@ -95,29 +100,28 @@ except ImportError:
 	pass
 
 
-def acf_shell(cid, DATA,fft_ver=fft_ver, max_cpu=max_cpu, SEGNUM=SEGNUM):
+from scipy.stats import mode
+
+def acf_shell(cidshape, DATA,fft_ver=fft_ver, max_cpu=max_cpu, SEGNUM=SEGNUM):
 	print()
 	print("*** You are using fft from %s with up to %s thread(s). ***" % (fft_ver, max_cpu))
 	print()
 	nvecs = SEGNUM
 	shells = {}
-
-	for i in range(len(cid)):
-		if cid[i] == 0:
-		    	cid[i] = 1
-
+	CID = numpy.zeros(cidshape)
 	data = DATA
 	data = numpy.append(data, numpy.zeros(data.shape, dtype=numpy.complex), axis=0)
 	leng, wid = data.shape
 	dnframes = int(leng/nvecs)
 	snframes = int(dnframes/2)
 
-	for i in range(cid.shape[0]):
+	for i in range(cidshape[0]):
 		shells[i] = numpy.zeros((snframes,), dtype=numpy.complex)
 
 	shell_id = {}
 	acf_dict = {}
 	idx0 = numpy.arange(0, leng, nvecs)
+	MIDDLE = int(snframes/2)
 	for i in range(nvecs):
 		idx = idx0 + i
 		vec0 = data[idx]
@@ -130,18 +134,26 @@ def acf_shell(cid, DATA,fft_ver=fft_ver, max_cpu=max_cpu, SEGNUM=SEGNUM):
 		sf = fx * numpy.conj(fx) + fy * numpy.conj(fy) + fz * numpy.conj(fz)
 		a = ifft(sf)
 		acf_dict[i] = a
-		shell_id[i] = numpy.int(vec0[0][-1].real)
+		sids = list((vec0[:,-1].real).astype(numpy.int))[:snframes] # or there will be snframes 0s !!!
+		#sid = int(mode(sids)[0][0])
+		sid = max(map(lambda val: (sids.count(val), val), set(sids)))[1]
+		shell_id[i] = sid # 0 for 1st shell, MIDDLE for the median shell, this is for the most frequent value
+		CID[sid] += 1
+	
 
+	for i in range(CID.shape[0]):
+		if CID[i] == 0:
+			CID[i] = 1
 	for i in range(nvecs):
 		sid = shell_id[i]
 		acf = acf_dict[i]
 		shells[sid] += acf[:snframes]
 
 	for i in shells:
-		acf = shells[i]/cid[i]
+		acf = shells[i]/CID[i]
 		acf = numpy.abs(acf)
 		acf /= numpy.arange(snframes, 0, -1)
-		acf /= acf[0]
+		acf /= acf[0] if acf[0] != 0 else 1 # avoid NaN
 		shells[i] = acf
 	return(shells)
 
@@ -188,39 +200,50 @@ def acf_avg(DATA,fft_ver=fft_ver, max_cpu=max_cpu, SEGNUM=SEGNUM):
 SEP = int(len(fs) / SLICES)
 L = sorted(alres)
 idx = 0
-cid = CIDS[0]
+#cid = CIDS[0]
 DATA = []
 for i in range(0, 0+SEP):
-        DATA.extend(alres[L[i]])
+	DATA.extend(alres[L[i]])
+	#print(type(alcid[i]), CID)
+#print(mean_cid)
 DATA = numpy.array(DATA, dtype=numpy.complex)
-SHELLS = acf_shell(cid, DATA)
+SHELLS = acf_shell(CIDSHAPE, DATA)
+#print(SHELLS)
 acf = acf_avg(DATA)
+SHELL_COUNT = numpy.zeros(CIDSHAPE)
+for i in SHELLS:
+	if SHELLS[i][0] != 0:
+		SHELL_COUNT[i] += 1
 
 
 for k in range(SEP, len(fs), SEP):
 	idx = int(k/SEP)
-	cid = CIDS[idx]
+	#cid = CIDS[idx]
 	DATA = []
 	for i in range(k, k+SEP):
 		DATA.extend(alres[L[i]])
 	DATA = numpy.array(DATA, dtype=numpy.complex)
-	shells = acf_shell(cid, DATA)
+	shells = acf_shell(CIDSHAPE, DATA)
 	for i in shells:
+		if shells[i][0] != 0:
+			SHELL_COUNT[i] += 1
 		SHELLS[i] += shells[i]
 	acf += acf_avg(DATA)
 
 
 for i in sorted(SHELLS):
-	if i>10:
-		break
+	#if i>10:
+		#break
+	n = SHELL_COUNT[i] if SHELL_COUNT[i] != 0 else 1
 	o = open('%s.dat' % (i), 'w')
 	for t, k in enumerate(SHELLS[i]):
-		o.write('%.4f %.4f\n' % (t, k/SLICES))
+		o.write('%.4f %.4f\n' % (t, k/n)) # avoid NaN
 	o.close()
 o = open('acf.log','w')
 for i,j in enumerate(acf):
 	o.write("%s %s\n" % (i+1, j/SLICES))
 o.close()
+
 
 #mol = hoomd_mols(xml)
 
