@@ -11,15 +11,15 @@ from cfunctions.cfunctions.functions import pbc, RgRadial, RgRadial_eff_idx, pbc
 def RgTensor(rpos, box):
 	n, m = rpos.shape
 	assert(m==3)
-	x = pos.T[0]
-	y = pos.T[1]
-	z = pos.T[2]
-	Sxx = sum(x*x)/n
-	Syy = sum(y*y)/n
-	Szz = sum(z*z)/n
-	Sxy = Syx = sum(x*y)/n
-	Sxz = Szx = sum(x*z)/n
-	Syz = Szy = sum(y*z)/n
+	x = rpos.T[0]
+	y = rpos.T[1]
+	z = rpos.T[2]
+	Sxx = x.dot(x)/n
+	Syy = y.dot(y)/n
+	Szz = z.dot(z)/n
+	Sxy = Syx = x.dot(y)/n
+	Sxz = Szx = x.dot(z)/n
+	Syz = Szy = y.dot(z)/n
 	return numpy.array([[Sxx, Sxy, Sxz],[Syx, Syy, Syz],[Szx, Szy, Szz]])
 
 def MajorAxis(rg_tensor):
