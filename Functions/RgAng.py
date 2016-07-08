@@ -8,11 +8,9 @@ import os
 
 from cfunctions.cfunctions.functions import pbc, RgRadial, RgRadial_eff_idx, pbc2d, cm_cc
 
-def RgTensor(pos, box):
-	n, m = pos.shape
+def RgTensor(rpos, box):
+	n, m = rpos.shape
 	assert(m==3)
-	center = cm(pos, box)
-	pos = pbc2d(pos - center, box)
 	x = pos.T[0]
 	y = pos.T[1]
 	z = pos.T[2]
@@ -112,6 +110,7 @@ def main(seg, xml, mols, binsize = 0.1, fn=''):
 			seg_idx = mol[s:s+seg]
 			seg_pos = r_pos[seg_idx]
 			cm_seg = cm_cc(seg_pos, box)
+			r_seg_pos = pbc2d(seg_pos - cm_seg, box)
 			r_cm = sqrt(cm_seg.dot(cm_seg))
 			#sid = shell_id(seg_pos, binsize)
 			sid = shell_cm(seg_pos, binsize, box)
@@ -119,7 +118,7 @@ def main(seg, xml, mols, binsize = 0.1, fn=''):
 			#shells += s
 			cid[sid] += 1
 			rg2, rgn2 = RgRadial_eff_idx(seg_pos, box)
-			rgtensor = RgTensor(seg_pos, box)
+			rgtensor = RgTensor(r_seg_pos, box)
 			maxis = MajorAxis_np(rgtensor)
 			r_maixs = sqrt(maxis.dot(maxis))
 			angle = abs(maxis.dot(cm_seg)/r_cm/r_maixs)
