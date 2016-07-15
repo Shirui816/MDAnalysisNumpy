@@ -1,5 +1,5 @@
 import numpy as np
-from Parser.hoomd_xml import hoomd_xml
+from Parser.hoomd_xml_pd import hoomd_xml
 from MoleculeClassify.bond_hash import bond_hash_unidirect
 from MoleculeClassify.body_hash import body_hash_unidirect
 from MoleculeClassify.isomer import classify_isomers
