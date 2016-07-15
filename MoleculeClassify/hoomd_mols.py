@@ -9,7 +9,7 @@ from MoleculeClassify.molcules import grabmolecules_without_body, grabmolecules_
 class hoomd_mols(object):
     def __init__(self, hoomd_xml):
         self.box = hoomd_xml.box
-        self.na = hoomd_xml.configure['natoms'].reshape((1,))
+        self.na = int(hoomd_xml.configure['natoms'].reshape((1,))) # for new feature, the convert from array([1])->1 is deprecated
         self.bond_hash_nn, self.bond_hash_wn = bond_hash_unidirect(hoomd_xml.nodes['bond'], self.na)
         self.body_hash = body_hash_unidirect(hoomd_xml.nodes['body'])
         molecular_list = []
