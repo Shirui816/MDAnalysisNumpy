@@ -102,9 +102,9 @@ def RgRadial_eff_idx(np.ndarray[double, ndim=2] r_pos, np.ndarray[double, ndim=1
         for i in range(m-1):
                 for j in range(i+1, m):
                         #d = pbc1d((r_pos[i]+r_pos[j])/2, box)
-                        dx = pbc(r_pos[i,0] + r_pos[j,0]/2, box[0])
-                        dy = pbc(r_pos[i,1] + r_pos[j,1]/2, box[1])
-                        dz = pbc(r_pos[i,2] + r_pos[j,2]/2, box[2])
+                        dx = pbc((r_pos[i,0] + r_pos[j,0])/2, box[0])
+                        dy = pbc((r_pos[i,1] + r_pos[j,1])/2, box[1])
+                        dz = pbc((r_pos[i,2] + r_pos[j,2])/2, box[2])
                         sx = pbc(r_pos[i,0]-r_pos[j,0], box[0])
                         sy = pbc(r_pos[i,1]-r_pos[j,1], box[1])
                         sz = pbc(r_pos[i,2]-r_pos[j,2], box[2])
