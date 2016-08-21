@@ -4,14 +4,26 @@ from MoleculeClassify.bond_hash import bond_hash_unidirect
 from MoleculeClassify.body_hash import body_hash_unidirect
 from MoleculeClassify.isomer import classify_isomers
 from MoleculeClassify.molcules import grabmolecules_without_body, grabmolecules_with_body
-
+from cfunctions.cfunctions.functions import cm_cc
 
 class hoomd_mols(object):
+    def bcs(self):
+        res = []
+        idx = np.arange(self.na)
+        for i in self.sbody:
+            idxes = idx[self.xml.nodes['body'] == i]
+            pos = self.xml.nodes['position'][idxes]
+            res.append(cm_cc(pos, self.box))
+        return np.array(res)
+    
     def __init__(self, hoomd_xml):
+        self.xml = hoomd_xml
         self.box = hoomd_xml.box
         self.na = int(hoomd_xml.configure['natoms'].reshape((1,))) # for new feature, the convert from array([1])->1 is deprecated
         self.bond_hash_nn, self.bond_hash_wn = bond_hash_unidirect(hoomd_xml.nodes['bond'], self.na)
         self.body_hash = body_hash_unidirect(hoomd_xml.nodes['body'])
+        self.sbody = sorted(list(set(hoomd_xml.nodes['body'])))
+        self.sbody.remove(-1)
         molecular_list = []
         types = hoomd_xml.nodes['type']
         molecular_hash = {}  # save a lot of time ^_^

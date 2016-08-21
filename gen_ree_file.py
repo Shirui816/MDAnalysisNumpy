@@ -2,16 +2,16 @@ import numpy as np
 
 from MoleculeClassify.hoomd_mols import hoomd_mols
 from Parser.hoomd_xml_pd import hoomd_xml
-
+from math import sqrt
 from sys import argv
 
 import os
 
-if os.path.isfile('ree.txt'):
-	os.remove('ree.txt')
 
-
-SEG, BINSIZE = 50, 2
+SEG, BINSIZE = [10,20,50,100,150,200], 1
+for seg in SEG:
+	if os.path.isfile("%s_ree.txt" % (seg)):
+		os.remove("%s_ree.txt" % (seg))
 
 
 fs = argv[1:]
@@ -19,21 +19,24 @@ from Functions.SegAcf import main
 xml1 = hoomd_xml(fs[0])
 mols = hoomd_mols(xml1)
 
-cid,cs = main(SEG, xml1, mols, binsize=BINSIZE)
+box = xml1.box
+bins = int(0.5 * sqrt(box.dot(box))/BINSIZE) + 1
+
+cs = main(SEG, xml1, mols, binsize=BINSIZE)
 for fn in fs[1:]:
 	print(fn)
 	xml = hoomd_xml(fn)
-	cid1, cs = main(SEG, xml, mols, binsize=BINSIZE, fn=fn)
+	cs = main(SEG, xml, mols, binsize=BINSIZE, fn=fn)
 	#cid += cid1
 
-o = open('cid.txt', 'w')
+for seg in SEG:
+	p=open('%s_seg_num.txt' % (seg), 'w')
+	p.write(str(cs[seg]))
+	p.close()
 
-for i in range(cid.shape[0]):
-	o.write("%.4f %.4f\n" % (i, cid[i]))
-
-p = open('seg_num.txt','w')
-p.write('%.4f\n' % (cs))
-
+p = open('cid_shape.txt','w')
+p.write(str(bins))
+p.close()
 
 #mol = hoomd_mols(xml)
 

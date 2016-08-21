@@ -25,3 +25,32 @@ class hoomd_xml(object):
             if (len(needed) != 0) and (not e.tag in needed):
                 continue
             self.nodes[e.tag] = read_csv(StringIO(e.text), delim_whitespace=True, squeeze=1, header=None).values
+
+
+class async_hoomd_xml(object):
+    @staticmethod
+    def _get_attrib(dd):
+        dt = eval('[' + ','.join(["('%s', int)" % key for key in dd.keys()]) + ']')
+        values = [tuple(dd.values())]
+        return array(values, dtype=dt)
+
+    def __init__(self, filename, needed=[]):
+        self.filename = filename
+        self.needed = needed
+
+    async def _init(self, filename, needed):
+        filename  = self.filename
+        needed = self.needed
+        tree = cElementTree.ElementTree(file=filename)
+        root = tree.getroot()
+        configuration = root[0]
+        self.configure = self._get_attrib(configuration.attrib)
+        self.nodes = {}
+        for e in configuration:
+            if e.tag == 'box':
+                self.cbox = self._get_attrib(e.attrib)
+                self.box = numpy.array([self.cbox['lx'], self.cbox['ly'], self.cbox['lz']]).reshape((3,)).astype(numpy.float)
+                continue
+            if (len(needed) != 0) and (not e.tag in needed):
+                continue
+            self.nodes[e.tag] = read_csv(StringIO(e.text), delim_whitespace=True, squeeze=1, header=None).values

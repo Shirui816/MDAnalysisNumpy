@@ -10,7 +10,7 @@ from sys import exit
 
 
 SEG, BINSIZE = 100, 1
-SLICES = 4
+SLICES = 1
 
 fs = argv[1:]
 
@@ -48,7 +48,7 @@ import pp
 
 
 
-THS = 40
+THS = 8
 
 allfiles = fs[1:]
 mm = int(len(allfiles)/THS)
@@ -65,21 +65,23 @@ def run(T):
 		fn = flist[i]
 		xml = Parser.hoomd_xml_pd.hoomd_xml(fn, needed=['position', 'type'])
 		cid1, cs, res = Functions.SegAcf.main4pp_data(SEGMENT, xml, mols, binsize=BINSIZE)
-		resd[i+1] = res
-		cidd[i+1] = cid1
+		alres[i+1] = res
+		alcid[i+1] = cid1
 	return(resd, cidd)
 
 inputs = list((i*mm, i * mm + mm if i<THS-1 else i*mm+rem+mm, allfiles, mols, BINSIZE, SEG) for i in range(THS))
-jobs = [(input_, job_server.submit(run,(input_,), modules=("numpy","Parser.hoomd_xml_pd","Functions.SegAcf"))) for input_ in inputs]
+jobs = [(input_, job_server.submit(run,(input_,),globals=globals(), modules=("numpy","Parser.hoomd_xml_pd","Functions.SegAcf"))) for input_ in inputs]
 
 
 
 for input_, job in jobs:
 	print("LIST",input_[0], input_[1])
-	resd,cidd = job()
-	alres.update(resd)
-	alcid.update(cidd)
+	job()
+	#resd,cidd = job()
+	#alres.update(resd)
+	#alcid.update(cidd)
 job_server.print_stats()
+
 
 
 
