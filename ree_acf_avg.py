@@ -152,7 +152,7 @@ for seg in SEG:
 		for i in shells:
 			if shells[i][0] != 0:
 				SHELL_COUNT[i] += 1
-		SHELLS[i] += shells[i]
+			SHELLS[i] += shells[i]
 	#ACF /= SLICES
 	for i in sorted(SHELLS):
 		n = SHELL_COUNT[i] if SHELL_COUNT[i] != 0 else 1
