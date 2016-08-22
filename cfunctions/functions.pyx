@@ -26,6 +26,10 @@ import numpy as np
 cimport cython
 cimport numpy as np
 
+def pbc1d(np.ndarray[double, ndim=1] pos, np.ndarray[double, ndim=1] box):
+    return pos - box * np.round(pos/box)
+
+
 @cython.boundscheck(False) # turn off bounds-checking for entire function
 @cython.wraparound(False)  # turn off negative index wrapping for entire function
 def pbc2d(np.ndarray[double, ndim=2] pos, np.ndarray[double, ndim=1] box):
