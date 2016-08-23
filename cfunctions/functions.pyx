@@ -11,8 +11,8 @@ def pbc(double r, double d):
     return r - d * round(r/d)
 
 
-def distance(double x0, double y0, double z0, double x1, double y1, double z1, double Lx, double Ly, double Lz):
-    return sqrt(pbc(x1 - x0, Lx) ** 2 + pbc(y1 - y0, Ly) ** 2 + pbc(z1 - z0, Lz) ** 2)
+#def distance(double x0, double y0, double z0, double x1, double y1, double z1, double Lx, double Ly, double Lz):
+#    return sqrt(pbc(x1 - x0, Lx) ** 2 + pbc(y1 - y0, Ly) ** 2 + pbc(z1 - z0, Lz) ** 2)
 
 
 def icell(long ix, long iy, long iz, long ibx, long iby, long ibz):
@@ -26,8 +26,13 @@ import numpy as np
 cimport cython
 cimport numpy as np
 
+
 def pbc1d(np.ndarray[double, ndim=1] pos, np.ndarray[double, ndim=1] box):
     return pos - box * np.round(pos/box)
+
+def dist1d(np.ndarray[double, ndim=1] pos1, np.ndarray[double, ndim=1] pos2, np.ndarray[double, ndim=1] box):
+    return sqrt(pbc(pos1[0]- pos2[0],box[0]) ** 2 + pbc(pos1[1]- pos2[1],box[1]) ** 2 + pbc(pos1[2]- pos2[2],box[2]) ** 2)
+
 
 
 @cython.boundscheck(False) # turn off bounds-checking for entire function
