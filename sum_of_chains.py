@@ -3,7 +3,7 @@ import numpy as np
 
 from MoleculeClassify.hoomd_mols import hoomd_mols
 from Parser.hoomd_xml_pd import hoomd_xml
-
+import re
 from sys import argv
 
 import os
@@ -23,6 +23,9 @@ matrix = allmol - bcs
 res = [sum_chains(xml1, mols, check = 5, thresh = 5)]
 
 for f in fs[1:]:
+	t = int(re.search('\d+',f).group())
+	if t % 5000:
+		continue
 	print(f)
 	xml = hoomd_xml(f, needed=['position'])
 	r = sum_chains(xml, mols, check=5, thresh =5)

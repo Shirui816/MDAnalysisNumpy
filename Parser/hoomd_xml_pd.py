@@ -1,5 +1,6 @@
 from numpy import array, loadtxt
 import numpy
+import numpy as np
 from io import StringIO
 from xml.etree import cElementTree  # pypy will be a bit slower than python
 from pandas import read_csv
@@ -19,8 +20,8 @@ class hoomd_xml(object):
         self.nodes = {}
         for e in configuration:
             if e.tag == 'box':
-                self.cbox = self._get_attrib(e.attrib)
-                self.box = numpy.array([self.cbox['lx'], self.cbox['ly'], self.cbox['lz']]).reshape((3,)).astype(numpy.float)
+                #print(e.attrib)
+                self.box = np.array([ float(e.attrib['lx']), float(e.attrib['ly']), float(e.attrib['lz']) ])
                 continue
             if (len(needed) != 0) and (not e.tag in needed):
                 continue

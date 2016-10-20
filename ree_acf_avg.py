@@ -9,9 +9,8 @@ from sys import exit
 
 
 SEG = [10, 50,100,200]
-SEG = [100]
 SLICES = 1
-COMP=1
+
 
 try:
 	from accelerate.mkl.fftpack import rfft, irfft, fft, ifft
@@ -127,7 +126,6 @@ def acf_avg(DATA,fft_ver=fft_ver, max_cpu=max_cpu, SEGNUM=0):
 
 CIDSHAPE = int(open('cid_shape.txt','r').read())
 
-
 import sys
 for seg in SEG:
 	print("Processing on segment %s" % (seg))
@@ -141,27 +139,28 @@ for seg in SEG:
 	SEP_seg = int(frames_seg/SLICES)
 	DATA = fs_seg[0:SEP_seg * cs_seg]
 	ACF = acf_avg(fs_seg,fft_ver=fft_ver, max_cpu=max_cpu, SEGNUM=cs_seg) # ACF for all frames, but SLICES for shells.
-	if not COMP:
-		SHELLS = acf_shell(CIDSHAPE, DATA, SEGNUM=cs_seg)
-		SHELL_COUNT = numpy.zeros(CIDSHAPE)
-		for i in SHELLS:
-			if SHELLS[i][0] != 0:
+	SHELLS = acf_shell(CIDSHAPE, DATA, SEGNUM=cs_seg)
+	SHELL_COUNT = numpy.zeros(CIDSHAPE)
+	for i in SHELLS:
+		if SHELLS[i][0] != 0:
+			SHELL_COUNT[i] += 1
+	for k in range(1, SLICES):
+		DATA = fs_seg[SEP_seg * k * cs_seg: SEP_seg * (k+1) * cs_seg]
+		#ACF += acf_avg(DATA, fft_ver=fft_ver, max_cpu=max_cpu, SEGNUM=cs_seg)
+		shells = acf_shell(CIDSHAPE, DATA, SEGNUM=cs_seg)
+		for i in shells:
+			if shells[i][0] != 0:
 				SHELL_COUNT[i] += 1
-		for k in range(1, SLICES):
-			DATA = fs_seg[SEP_seg * k * cs_seg: SEP_seg * (k+1) * cs_seg]
-			#ACF += acf_avg(DATA, fft_ver=fft_ver, max_cpu=max_cpu, SEGNUM=cs_seg)
-			shells = acf_shell(CIDSHAPE, DATA, SEGNUM=cs_seg)
-			for i in shells:
-				if shells[i][0] != 0:
-					SHELL_COUNT[i] += 1
-			SHELLS[i] += shells[i]
-		for i in sorted(SHELLS):
-			n = SHELL_COUNT[i] if SHELL_COUNT[i] != 0 else 1
-			o = open('%s_%s.dat' % (seg, i), 'w')
-			for t, k in enumerate(SHELLS[i]):
-				o.write('%.4f %.4f\n' % (t, k/n)) # avoid NaN
-			o.close()
+		SHELLS[i] += shells[i]
+	#ACF /= SLICES
+	for i in sorted(SHELLS):
+		n = SHELL_COUNT[i] if SHELL_COUNT[i] != 0 else 1
+		o = open('%s_%s.dat' % (seg, i), 'w')
+		for t, k in enumerate(SHELLS[i]):
+			o.write('%.4f %.4f\n' % (t, k/n)) # avoid NaN
+		o.close()
 	o = open("%s_acf_avg.txt" % (seg), 'w')
 	for i,j in enumerate(ACF):
 		o.write("%s %s\n" % (i+1, j))
 	o.close()
+

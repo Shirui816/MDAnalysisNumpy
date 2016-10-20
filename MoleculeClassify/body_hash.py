@@ -3,9 +3,15 @@ import numpy as np
 def body_hash_unidirect(body):
     body_hash = {}
     print('Building body hash...')
+    if body == []:
+        print('Done.')
+        return None
     natoms = len(body)
     idxes = np.arange(natoms)
-    bodies = list(set(list(body[body!=-1])))
+    if body == []:
+        bodies = []
+    else:
+        bodies = list(set(list(body[body!=-1])))
     for i in range(natoms):
         body_hash[i] = []
     for b in bodies:
