@@ -3,7 +3,7 @@ from Parser.hoomd_xml_pd import hoomd_xml
 from MoleculeClassify.bond_hash import bond_hash_unidirect, bond_hash_dualdirect
 from MoleculeClassify.body_hash import body_hash_unidirect
 from MoleculeClassify.isomer import classify_isomers
-from MoleculeClassify.molcules import grabmolecules_without_body, grabmolecules_with_body, grab_iter
+from MoleculeClassify.molcules import grabmolecules_without_body, grabmolecules_with_body, grab_iter_dual
 from cfunctions.cfunctions.functions import cm_cc
 
 class hoomd_mols(object):
@@ -42,13 +42,13 @@ class hoomd_mols(object):
             #if molecular_hash[i] == True:
                 #continue
             #gb(i, self.body_hash, self.bond_hash_nn, mol_idxes=molecular_idxs,mol_used=molecular_hash)
-            molecular_idxs = grab_iter(i, self.bond_hash_nn, mol_used=molecular_hash, body_hash=bdh)#self.body_hash)
-            if not len(molecular_idxs)==1:
+            molecular_idxs = grab_iter_dual(i, self.bond_hash_nn, mol_used=molecular_hash, body_hash=bdh)#self.body_hash)
+            if not len(molecular_idxs)<=1: # avoid monomer and void list
                 molecular_list.append(molecular_idxs)
             for atom in molecular_idxs:
                 molecular_hash[atom] = True
-        while [] in molecular_list:
-            molecular_list.remove([])
+        #while [] in molecular_list: # this remove operation is really SLOW
+            #molecular_list.remove([])
         self.mol_idxes = np.array([ np.array(x) for x in molecular_list ])
         #print(self.mol_idxes)
         molecular_types = []
